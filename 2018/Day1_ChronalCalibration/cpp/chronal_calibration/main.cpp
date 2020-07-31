@@ -6,17 +6,18 @@
 #include <optional>
 #include <set>
 
-std::vector<int> load_data() {
-    // load data into a vector<int>
-    std::ifstream input_file("../../../input.txt");
-    using iter_t = std::istream_iterator<int>;
-    std::vector<int> data(iter_t{input_file}, iter_t{});
+template<typename T>
+std::vector<T> load_data(const std::string& filename) {
+    // load data into a vector<T>
+    std::ifstream input_file(filename);
+    using iter_t = std::istream_iterator<T>;
+    std::vector<T> data(iter_t{input_file}, iter_t{});
     return data;
 }
 
 void part_one(const std::vector<int>& data) {
     // sum up all the data
-    auto sum {std::accumulate(data.cbegin(), data.cend(), 0)};
+    int sum {std::accumulate(data.cbegin(), data.cend(), 0)};
     std::cout << "Part 1: " << sum << std::endl;
 }
 
@@ -38,7 +39,7 @@ void part_two(const std::vector<int>& data) {
 }
 
 int main() {
-    const auto data {load_data()};
+    const auto data {load_data<int>("../../../input.txt")};
     part_one(data);
     part_two(data);
 }
