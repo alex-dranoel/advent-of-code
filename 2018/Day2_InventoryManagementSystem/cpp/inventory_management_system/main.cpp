@@ -31,7 +31,7 @@ public:
     WordType(bool two, bool three): two{two}, three{three} {}
 
     [[nodiscard]]
-    static WordType fromStr(std::string_view str) {
+    static WordType from_str(std::string_view str) {
         std::map<char, int> freqs{};
         std::for_each(c_all(str), [&](auto c) {++freqs[c - 'a'];});
         auto two { std::any_of(c_all(freqs), value_is(2)) };
@@ -40,7 +40,7 @@ public:
     }
 
     [[nodiscard]]
-    static WordType fromStrUsingSort(std::string str) {
+    static WordType from_str_using_sort(std::string str) {
         std::sort(all(str));
         char prev_ch {'\0'};
         int count {1}, two_letters {0}, three_letters {0};
@@ -125,7 +125,7 @@ void part_two(const std::vector<std::string>& data) {
 
 int main() {
     c_auto data { load_data<std::string>("../../../input.txt") };
-    part_one(data, &WordType::fromStr);
-    part_one(data, &WordType::fromStrUsingSort);
+    part_one(data, &WordType::from_str);
+    part_one(data, &WordType::from_str_using_sort);
     part_two(data);
 }
