@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <iterator>
+#include <utility>
 #include <vector>
 #include <algorithm>
 #include <numeric>
@@ -8,8 +9,8 @@
 #include <map>
 
 #define c_auto const auto
-#define all(v) v.begin(), v.end()
-#define c_all(v) v.cbegin(), v.cend()
+#define all(v) std::begin(v), std::end(v)
+#define c_all(v) std::cbegin(v), std::cend(v)
 
 using Square = std::tuple<int, int>;
 using Id = int;
@@ -26,6 +27,58 @@ std::vector<std::string> load_lines(const std::string& filename) {
     return data;
 }
 
+class BiRangeIterator {
+public:
+    // Previously provided by std::iterator - see update below
+    using value_type = std::tuple<int, int>;
+    using difference_type = std::ptrdiff_t;
+    using pointer = std::tuple<int, int>*;
+    using reference = std::tuple<int, int>&;
+    using iterator_category = std::input_iterator_tag;
+
+private:
+    value_type value_;
+    value_type start_;
+    value_type end_;
+
+    class BiRangeIteratorHolder  {
+        value_type value_;
+        value_type start_;
+        value_type end_;
+    public:
+        BiRangeIteratorHolder(value_type value, value_type end):
+                value_(std::move(value)), start_(value_), end_(std::move(end)) {}
+        value_type operator*() { return value_; }
+    };
+public:
+
+    explicit BiRangeIterator(value_type end):
+            value_(std::move(end)), start_(value_), end_(value_) {}
+    explicit BiRangeIterator(value_type value, value_type end):
+            value_(std::move(value)), start_(value_), end_(std::move(end)) {}
+    value_type operator*() const { return value_; }
+    bool operator==(const BiRangeIterator& other) const { return value_ == other.value_; }
+    bool operator!=(const BiRangeIterator& other) const { return !(*this == other); }
+    BiRangeIteratorHolder operator++(int) {
+        BiRangeIteratorHolder ret(value_, end_);
+        ++*this;
+        return ret;
+    }
+    BiRangeIterator& operator++() {
+        auto& [x, y] {value_};
+        c_auto& [x_start, y_start] {start_};
+        c_auto& [x_end, y_end] {end_};
+        ++x;
+        if (x == x_end) {
+            y += 1;
+            if (y < y_end) {
+                x = x_start;
+            }
+        }
+        return *this;
+    }
+};
+
 struct Claim {
     Id id;
     int x, y, w, h;
@@ -39,17 +92,19 @@ struct Claim {
         sscanf(str.data(), "#%d @ %d,%d: %dx%d", &id, &x, &y, &w, &h);
         return Claim{id, x, y, w, h};
     };
-    std::vector<Square> squares() const {
-        std::vector<Square> squares;
-        squares.reserve(h * w);
-        for (int i {y}; i < y + h; ++i) {
-            for (int j {x}; j < x + w; ++j) {
-                squares.emplace_back(j, i);
-            }
-        }
-        return squares;
-    }
 
+    [[nodiscard]]
+    BiRangeIterator begin() const {
+        return BiRangeIterator(std::make_tuple(x, y), std::make_tuple(x + w, y + h));
+    }
+    [[nodiscard]]
+    BiRangeIterator end() const {
+        return BiRangeIterator(std::make_tuple(x + w, y + h));
+    }
+    [[nodiscard]]
+    BiRangeIterator cbegin() const { return begin(); }
+    [[nodiscard]]
+    BiRangeIterator cend() const { return end(); }
 };
 
 
@@ -59,15 +114,14 @@ ClaimsMap make_claims_map(const std::vector<Claim>& claims) {
 //    // Using for_each and lambdas, in this case, does not
 //    // look much better than range-based for loops.
 //    std::for_each(c_all(claims), [&](c_auto &claim) {
-//        auto squares {claim.squares()};
-//        std::for_each(c_all(squares), [&](c_auto &parcel) {
+//        std::for_each(c_all(claim), [&](c_auto &parcel) {
 //            claims_map[parcel].push_back(claim.id);
 //        });
 //    });
 
     // Using range-based for loops, in this case, this looks better
     for (c_auto &claim: claims) {
-        for (c_auto &square: claim.squares()) {
+        for (c_auto &square: claim) {
             claims_map[square].push_back(claim.id);
         }
     }
@@ -98,8 +152,7 @@ void part_two(ClaimsMap& claims_map, const std::vector<Claim>& claims) {
     // using STL algo find_if and all_of. With the help of the c_all and c_auto
     // macros, the code looks nice
     auto claim_it {std::find_if(c_all(claims), [&](c_auto& claim) {
-        auto squares {claim.squares()};
-        return std::all_of(c_all(squares), [&](c_auto& square) {
+        return std::all_of(c_all(claim), [&](c_auto& square) {
             return claims_map[square].size() == 1;
         });
     })};
@@ -125,6 +178,7 @@ void part_two(ClaimsMap& claims_map, const std::vector<Claim>& claims) {
 //    std::cout << "Part 2: " << (claim_id ? std::to_string(claim_id.value()) : "not found") << std::endl;
 
 }
+
 int main() {
     auto data { load_lines("../../../input.txt") };
 

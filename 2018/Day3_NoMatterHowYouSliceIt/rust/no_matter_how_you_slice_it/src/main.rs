@@ -26,24 +26,26 @@ fn vec_from_file<T: FromStr>(filename: impl AsRef<Path>) -> Vec<T>
 
 #[derive(Debug)]
 struct Claim {
-    id: i32,
-    x: i32,
-    y: i32,
-    h: i32,
-    w: i32,
+    id: i32, x: i32, y: i32, h: i32, w: i32,
+}
+
+#[derive(Debug)]
+struct ClaimIter {
+    x_start: i32, x_end: i32, y_start: i32, y_end: i32, x: i32, y: i32,
 }
 
 impl Claim {
-    fn squares(&self) -> Vec<(i32, i32)> {
-        let mut squares: Vec<(i32, i32)> = Vec::with_capacity((self.h * self.w) as usize);
-        for i in self.y..self.y+self.h {
-            for j in self.x..self.x+self.w {
-                squares.push((j, i));
-            }
-        }
-        squares
+    fn iter(&self) -> ClaimIter {
+        ClaimIter::new(self.x,self.x + self.w,self.y,self.y + self.h)
     }
 }
+
+impl ClaimIter {
+    fn new(x_start: i32, x_end: i32, y_start: i32, y_end: i32) -> Self {
+        ClaimIter { x_start, x_end, y_start, y_end, x: x_start, y: y_start }
+    }
+}
+
 impl FromStr for Claim {
     type Err = ();
 
@@ -60,13 +62,44 @@ impl FromStr for Claim {
     }
 }
 
+impl IntoIterator for &Claim {
+    type Item = (i32, i32);
+    type IntoIter = ClaimIter;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.iter()
+    }
+}
+
+impl Iterator for ClaimIter {
+    type Item = (i32, i32);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let s = self;
+        let end = Some((s.x_end, s.y_end));
+        let item = Some((s.x, s.y));
+        if item == end {
+            None
+        } else {
+            s.x += 1;
+            if s.x == s.x_end {
+                s.y += 1;
+                if s.y < s.y_end {
+                    s.x = s.x_start
+                }
+            }
+            item
+        }
+    }
+}
+
 fn make_claims_map(claims: &[Claim]) -> ClaimsMap {
     let mut claims_map: ClaimsMap = HashMap::new();
 
     claims.iter().for_each(|claim| {
-        claim.squares().iter().for_each(|square| {
+        claim.iter().for_each(|square| {
             claims_map
-                .entry(*square)
+                .entry(square)
                 .and_modify(|ids|ids.push(claim.id))
                 .or_insert(vec!(claim.id));
         });
@@ -83,7 +116,7 @@ fn part_one(claims_map: &ClaimsMap) -> usize {
 fn part_two(claims_map: &ClaimsMap, claims: &[Claim]) -> Option<i32> {
     let candidates: Vec<&Claim> = claims.iter()
         .filter(|claim| {
-            claim.squares().iter().all(|square| claims_map.get(square).unwrap().len() == 1)
+            claim.iter().all(|square| claims_map.get(&square).unwrap().len() == 1)
         })
         .collect();
 
