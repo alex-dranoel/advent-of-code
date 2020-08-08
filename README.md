@@ -4,6 +4,10 @@ In this repo, I'll gather solutions to the famous yearly challenges of [Advent O
 
 In short, each year, while waiting for Christmas, you're given one problem a day for 25 days. Your goal is to solve the puzzles with any of your preferred programming language. Some don't even use a programming language and manage to solve some puzzles with VIM! Solving a problem is great, and that is already a reward in itself. But the real challenge is to be one of the first persons to give the right answer and put your name on the leader board.
 
+Note, the primary goal is not to get a code that takes the least time to compute the answer, but to get the answer as quickly as possible. Coding two hours to produce a solution that computes the answer in 20 ms, does not get you as close as a code written in 30 minutes that gives you the answer in 2 seconds. Of course, it is still a nice exercise to write a code that find the answer as quickly as possible. However, it is also a very good exercise, sometimes more important, to write a clean nice readable code, that would not be as efficient but still gives the answer in a reasonable period.
+
+My solutions are probably standing in between. When solving past challenges there is of course no real time pressure in writing the code but you have to aim at this in order to be able to pretend to the leader board for the future challenges. More details is given case by case.
+
 ## My own experience
 I only discovered Advent Of Code in December 2019. So, I'm a beginner in that sens. I first started by developing solutions in Java ... because that was the language I used the most at that time. I managed to solve most of the problems of that year, but of course, I was never not even close to figure on the leader board (note also that I live in Belgium, and I would have to wake-up quite early for that). Now is the Covid-19 crisis, and I have some more time at home to come back on those puzzles.
 

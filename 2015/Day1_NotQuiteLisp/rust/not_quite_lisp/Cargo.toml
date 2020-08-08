@@ -1,0 +1,9 @@
+[package]
+name = "not_quite_lisp"
+version = "0.1.0"
+authors = ["Alexandre Léonard <alexandre.leonard@kapsch.net>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
